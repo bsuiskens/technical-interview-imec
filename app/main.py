@@ -122,40 +122,27 @@ def list_activities(
 # PART 1 — IMPACT CALCULATION
 # =========================================================
 
-@app.get("/activities/{activity_name}/impact")
+@app.get(
+    "/activities/{activity_name}/impact",
+    response_model=schemas.ImpactResponse
+)
 def calculate_activity_impact(
     activity_name: str,
     partner_id: str | None = None,
     db: Session = Depends(get_db)
 ):
-    """
-    Resolve total climate impact recursively for an activity.
 
-    Expected behavior:
-    - Resolve exchanges recursively
-    - Sum material/electricity impacts
-    - Support partner-specific activities
-    - Fall back to Company A base activities
-    """
+    total_impact = crud.calculate_activity_impact_recursive(
+        db=db,
+        activity_name=activity_name,
+        partner_id=partner_id
+    )
 
-    # TODO:
-    # 1. Lookup activity by:
-    #    - partner_id + activity_name
-    #    - fallback to base activity if not found
-    #
-    # 2. Resolve exchanges recursively
-    #
-    # 3. Detect circular dependencies
-    #
-    # 4. Sum total impact
-    #
-    # 5. Return structured response
-
-    return {
-        "status": "TODO",
-        "activity_name": activity_name,
-        "partner_id": partner_id
-    }
+    return schemas.ImpactResponse(
+        activity_name=activity_name,
+        partner_id=partner_id,
+        total_impact=round(total_impact, 4)
+    )
 
 
 # =========================================================
@@ -199,3 +186,9 @@ async def upload_partner_recipe(
         "filename": file.filename
     }
 
+
+
+
+# =========================================================
+# PART 2 — PARTNER RECIPE UPLOAD
+# =========================================================
