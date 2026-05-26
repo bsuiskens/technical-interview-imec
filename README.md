@@ -1,12 +1,13 @@
 # technical-interview-imec
 A 4 hour technical exam for software developer at the SSTS team of Imec.
 
-
-Installation:
+Requirements:
 
 Python3 is required to run this application.
 
-You need to add a .env file with the following lines
+Installation:
+
+You need to add a .env file in the repo root with the following lines
 
 DATABASE_URL=sqlite:///./app.db
 DATABASE_TEST_URL=sqlite:///./test.db
