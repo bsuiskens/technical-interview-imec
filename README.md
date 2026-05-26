@@ -1,11 +1,11 @@
 # technical-interview-imec
 A 4 hour technical exam for software developer at the SSTS team of Imec.
 
-Requirements:
+## Requirements:
 
 Python3 is required to run this application.
 
-Installation:
+## Installation:
 
 You need to add a .env file in the repo root with the following lines
 
@@ -17,15 +17,19 @@ The required packages can be installed with the command:
 
 pip install pandas openpyxl sqlalchemy fastapi uvicorn python-dotenv python-multipart pytest httpx
 
+## Running the application
+
 The application can be started with the command:
 
 uvicorn app.main:app --reload
+
+## Testing
 
 you can run the test suite with:
 
 pytest
 
-Troubleshooting:
+## Troubleshooting
 
 if the pip or uvicorn command is giving an error, it's possible you need to use a virtual env within visual studio code:
 
