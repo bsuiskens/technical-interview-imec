@@ -1,6 +1,8 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from .bw_parser import ParsedBW2Workbook
+from .models import Activity, Exchange, MaterialImpact, ElectricityImpact
 from . import models
 
 
@@ -116,3 +118,69 @@ def calculate_activity_impact_recursive(
         total_impact += amount * nested_impact
 
     return total_impact
+
+
+def persist_parsed_workbook(
+    db: Session,
+    parsed: ParsedBW2Workbook,
+    partner_id: str | None = None,
+):
+    """
+    Persist parsed workbook contents into the database.
+    """
+
+    # --------------------------------------------------------
+    # Activities + exchanges
+    # --------------------------------------------------------
+
+    for parsed_activity in parsed.activities:
+
+        activity = Activity(
+            name=parsed_activity.name,
+            partner_id=partner_id,
+        )
+
+        db.add(activity)
+        db.flush()
+
+        for parsed_exchange in parsed_activity.exchanges:
+
+            exchange = Exchange(
+                activity_id=activity.id,
+                input_name=parsed_exchange.input_name,
+                amount=parsed_exchange.amount,
+                unit=parsed_exchange.unit,
+            )
+
+            db.add(exchange)
+
+    # --------------------------------------------------------
+    # Material impacts
+    # Only inserted for Company A base dataset
+    # --------------------------------------------------------
+
+    if partner_id is None:
+
+        for parsed_material in parsed.material_impacts:
+
+            material = MaterialImpact(
+                name=parsed_material.name,
+                impact_factor=parsed_material.impact_factor,
+            )
+
+            db.add(material)
+
+        # ----------------------------------------------------
+        # Electricity impacts
+        # ----------------------------------------------------
+
+        for parsed_electricity in parsed.electricity_impacts:
+
+            electricity = ElectricityImpact(
+                name=parsed_electricity.name,
+                impact_factor=parsed_electricity.impact_factor,
+            )
+
+            db.add(electricity)
+
+    db.commit()

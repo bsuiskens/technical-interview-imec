@@ -1,7 +1,9 @@
 from fastapi import Depends, FastAPI, UploadFile, File
 from sqlalchemy.orm import Session
 
-from . import crud, models, schemas
+import tempfile
+from pathlib import Path
+from . import crud, models, schemas, bw_parser
 from .seed import bootstrap_company_a_data
 from .database import Base, engine, get_db
 
@@ -162,26 +164,66 @@ async def upload_partner_recipe(
     db: Session = Depends(get_db)
 ):
     """
-    Upload and persist partner recipe Excel file.
+    Upload and persist partner recipe workbook.
     """
 
-    # TODO:
-    # 1. Validate uploaded file type
-    #
-    # 2. Parse Excel workbook with pandas/openpyxl
-    #
-    # 3. Validate required columns/sheets
-    #
-    # 4. Store activities
-    #
-    # 5. Store exchanges
-    #
-    # 6. Associate all uploaded rows with partner_id
-    #
-    # 7. Handle duplicate uploads safely
+    # --------------------------------------------------------
+    # Validate file type
+    # --------------------------------------------------------
 
-    return {
-        "status": "TODO",
-        "partner_id": partner_id,
-        "filename": file.filename
-    }
+    if not file.filename.endswith((".xlsx", ".xls")):
+        raise HTTPException(
+            status_code=400,
+            detail="Only Excel files are supported"
+        )
+
+    # --------------------------------------------------------
+    # Create temporary file
+    # --------------------------------------------------------
+
+    tmp = tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".xlsx"
+    )
+
+    try:
+        contents = await file.read()
+        tmp.write(contents)
+
+    finally:
+        tmp.close()
+
+    temp_path = Path(tmp.name)
+
+    try:
+
+        # ----------------------------------------------------
+        # Parse workbook
+        # ----------------------------------------------------
+
+        parsed = bw_parser.parse_bw2_workbook(temp_path)
+
+        # ----------------------------------------------------
+        # Persist parsed workbook
+        # ----------------------------------------------------
+
+        crud.persist_parsed_workbook(
+            db=db,
+            parsed=parsed,
+            partner_id=partner_id,
+        )
+
+        return {
+            "status": "success",
+            "partner_id": partner_id,
+            "activities_uploaded": len(parsed.activities),
+        }
+
+    finally:
+
+        # ----------------------------------------------------
+        # Cleanup temp file
+        # ----------------------------------------------------
+
+        if temp_path.exists():
+            temp_path.unlink()

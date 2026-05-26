@@ -36,24 +36,33 @@ class ParsedBW2Workbook:
     material_impacts: List[ParsedMaterialImpact]
     electricity_impacts: List[ParsedElectricityImpact]
 
-
+    
 def parse_bw2_workbook(path: str | Path) -> ParsedBW2Workbook:
     """
     Main workbook parser entrypoint.
     """
 
-    xls = pd.ExcelFile(path)
+    with pd.ExcelFile(path) as xls:
 
-    activities = parse_activities_sheet(xls)
-    material_impacts = parse_material_impacts(xls)
-    electricity_impacts = parse_electricity_impacts(xls)
+        activities = parse_activities_sheet(xls)
 
-    return ParsedBW2Workbook(
-        activities=activities,
-        material_impacts=material_impacts,
-        electricity_impacts=electricity_impacts,
-    )
+        material_impacts = (
+            parse_material_impacts(xls)
+            if "Materials" in xls.sheet_names
+            else []
+        )
 
+        electricity_impacts = (
+            parse_electricity_impacts(xls)
+            if "Electricity" in xls.sheet_names
+            else []
+        )
+
+        return ParsedBW2Workbook(
+            activities=activities,
+            material_impacts=material_impacts,
+            electricity_impacts=electricity_impacts,
+        )
 
 def parse_activities_sheet(xls: pd.ExcelFile) -> List[ParsedActivity]:
     """
