@@ -23,3 +23,10 @@ uvicorn app.main:app --reload
 you can run the test suite with:
 
 pytest
+
+Troubleshooting:
+
+if the pip or uvicorn command is giving an error, it's possible you need to use a virtual env within visual studio code:
+
+python -m venv .venv 
+.venv\Scripts\activate 
