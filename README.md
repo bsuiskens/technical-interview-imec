@@ -8,7 +8,7 @@ Python3 is required to run this application.
 
 The required packages can be installed with the command:
 
-pip install pandas openpyxl sqlalchemy fastapi uvicorn python-dotenv
+pip install pandas openpyxl sqlalchemy fastapi uvicorn python-dotenv python-multipart
 
 The application can be started with the command:
 
