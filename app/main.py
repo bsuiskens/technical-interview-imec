@@ -79,16 +79,16 @@ def list_activities(
 
     query = db.query(models.Activity)
 
-    # If partner specified:
-    # show both shared base activities
-    # and partner-owned activities
+    # Show partner-visible activities:
+    # - shared Company A activities
+    # - partner-owned activities
     if partner_id:
         activities = query.filter(
             (models.Activity.partner_id == None) |
             (models.Activity.partner_id == partner_id)
         ).all()
 
-    # Otherwise only show Company A base data
+    # Otherwise only Company A base activities
     else:
         activities = query.filter(
             models.Activity.partner_id == None
@@ -101,7 +101,17 @@ def list_activities(
                 "id": activity.id,
                 "name": activity.name,
                 "partner_id": activity.partner_id,
-                "exchange_count": len(activity.exchanges)
+                "exchange_count": len(activity.exchanges),
+
+                "exchanges": [
+                    {
+                        "id": exchange.id,
+                        "input_name": exchange.input_name,
+                        "amount": exchange.amount,
+                        "unit": exchange.unit
+                    }
+                    for exchange in activity.exchanges
+                ]
             }
             for activity in activities
         ]
