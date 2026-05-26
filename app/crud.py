@@ -119,7 +119,6 @@ def calculate_activity_impact_recursive(
 
     return total_impact
 
-
 def persist_parsed_workbook(
     db: Session,
     parsed: ParsedBW2Workbook,
@@ -127,60 +126,111 @@ def persist_parsed_workbook(
 ):
     """
     Persist parsed workbook contents into the database.
+
+    Behavior:
+    - Company A seed data:
+        inserts immutable base records
+    - Partner uploads:
+        upserts activities
     """
 
-    # --------------------------------------------------------
-    # Activities + exchanges
-    # --------------------------------------------------------
-
-    for parsed_activity in parsed.activities:
-
-        activity = Activity(
-            name=parsed_activity.name,
-            partner_id=partner_id,
-        )
-
-        db.add(activity)
-        db.flush()
-
-        for parsed_exchange in parsed_activity.exchanges:
-
-            exchange = Exchange(
-                activity_id=activity.id,
-                input_name=parsed_exchange.input_name,
-                amount=parsed_exchange.amount,
-                unit=parsed_exchange.unit,
-            )
-
-            db.add(exchange)
-
-    # --------------------------------------------------------
-    # Material impacts
-    # Only inserted for Company A base dataset
-    # --------------------------------------------------------
-
-    if partner_id is None:
-
-        for parsed_material in parsed.material_impacts:
-
-            material = MaterialImpact(
-                name=parsed_material.name,
-                impact_factor=parsed_material.impact_factor,
-            )
-
-            db.add(material)
+    try:
 
         # ----------------------------------------------------
-        # Electricity impacts
+        # Activities + exchanges
         # ----------------------------------------------------
 
-        for parsed_electricity in parsed.electricity_impacts:
+        for parsed_activity in parsed.activities:
 
-            electricity = ElectricityImpact(
-                name=parsed_electricity.name,
-                impact_factor=parsed_electricity.impact_factor,
+            # ------------------------------------------------
+            # PARTNER UPSERT BEHAVIOR
+            # ------------------------------------------------
+
+            if partner_id is not None:
+
+                existing_activity = (
+                    db.query(Activity)
+                    .filter(
+                        Activity.name == parsed_activity.name,
+                        Activity.partner_id == partner_id,
+                    )
+                    .first()
+                )
+
+                if existing_activity:
+
+                    # Delete existing exchanges first
+                    db.query(Exchange).filter(
+                        Exchange.activity_id == existing_activity.id
+                    ).delete()
+
+                    # Delete existing activity
+                    db.delete(existing_activity)
+
+                    db.flush()
+
+            # ------------------------------------------------
+            # Create fresh activity
+            # ------------------------------------------------
+
+            activity = Activity(
+                name=parsed_activity.name,
+                partner_id=partner_id,
             )
 
-            db.add(electricity)
+            db.add(activity)
+            db.flush()
 
-    db.commit()
+            # ------------------------------------------------
+            # Create exchanges
+            # ------------------------------------------------
+
+            for parsed_exchange in parsed_activity.exchanges:
+
+                exchange = Exchange(
+                    activity_id=activity.id,
+                    input_name=parsed_exchange.input_name,
+                    amount=parsed_exchange.amount,
+                    unit=parsed_exchange.unit,
+                )
+
+                db.add(exchange)
+
+        # ----------------------------------------------------
+        # BASE DATA ONLY
+        # ----------------------------------------------------
+
+        if partner_id is None:
+
+            # ------------------------------------------------
+            # Material impacts
+            # ------------------------------------------------
+
+            for parsed_material in parsed.material_impacts:
+
+                material = MaterialImpact(
+                    name=parsed_material.name,
+                    impact_factor=parsed_material.impact_factor,
+                )
+
+                db.add(material)
+
+            # ------------------------------------------------
+            # Electricity impacts
+            # ------------------------------------------------
+
+            for parsed_electricity in parsed.electricity_impacts:
+
+                electricity = ElectricityImpact(
+                    name=parsed_electricity.name,
+                    impact_factor=parsed_electricity.impact_factor,
+                )
+
+                db.add(electricity)
+
+        db.commit()
+
+    except Exception:
+
+        db.rollback()
+        raise

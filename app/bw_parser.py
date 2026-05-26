@@ -42,7 +42,7 @@ def parse_bw2_workbook(path: str | Path) -> ParsedBW2Workbook:
     Main workbook parser entrypoint.
     """
 
-    with pd.ExcelFile(path) as xls:
+    with pd.ExcelFile(path) as xls: #Ensures it terminates if it uses a tempfile that gets deleted during the operation
 
         activities = parse_activities_sheet(xls)
 
