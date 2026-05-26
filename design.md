@@ -13,6 +13,6 @@ this app will initially feature a SQLite serverless database in order to further
 
 Excel input handling: pandas + openpyxl; standard strategy for excel handling.
 
-Testing strategy: A basic test suite in pytest will be included.
+Testing strategy: pytest smoke tests with limited coverage, to handle critical regression issues.
 
 Why not the BW2 package?: As the document specifies that it is a simplified BW2 datastructure, this implies the PoC is not required to have outright BW2 compatability and may in fact not operate with the example file. On top of BW2 being rather heavyweight and high-configuration, I've elected to forgo it for the time being.

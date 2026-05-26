@@ -22,3 +22,4 @@ uvicorn app.main:app --reload
 
 you can run the test suite with:
 
+pytest
