@@ -131,7 +131,13 @@ def calculate_activity_impact(
     partner_id: str | None = None,
     db: Session = Depends(get_db)
 ):
-
+    """
+        Gets the calculated activity of a given activity.
+        
+        - Looks for version associated with the partner id
+        - Defaults to the base activity if the partner id doesn't have a unique version associated with it.
+        - Case-sensitive
+    """
     total_impact = crud.calculate_activity_impact_recursive(
         db=db,
         activity_name=activity_name,
@@ -157,12 +163,6 @@ async def upload_partner_recipe(
 ):
     """
     Upload and persist partner recipe Excel file.
-
-    Expected behavior:
-    - Parse uploaded Excel file
-    - Validate sheet structure
-    - Persist partner-owned activities/exchanges
-    - Keep Company A data isolated
     """
 
     # TODO:
@@ -185,10 +185,3 @@ async def upload_partner_recipe(
         "partner_id": partner_id,
         "filename": file.filename
     }
-
-
-
-
-# =========================================================
-# PART 2 — PARTNER RECIPE UPLOAD
-# =========================================================
