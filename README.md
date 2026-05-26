@@ -3,7 +3,7 @@ A 4 hour technical exam for software developer at the SSTS team of Imec.
 
 ## Requirements:
 
-Python3 is required to run this application.
+Python3 and Docker is required to run this application.
 
 ## Installation:
 
@@ -15,7 +15,7 @@ SEED_DATA_PATH=app/data/Company_A_database.xlsx
 
 The required packages can be installed with the command:
 
-pip install pandas openpyxl sqlalchemy fastapi uvicorn python-dotenv python-multipart pytest httpx
+pip install pandas openpyxl sqlalchemy fastapi uvicorn python-dotenv python-multipart pytest httpx psycopg2-binary
 
 ## Running the application
 
