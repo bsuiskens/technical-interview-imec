@@ -2,7 +2,7 @@ The requirement list has been interpreted as a request for a urgently needed Pro
 
 This would give preference to minimal-setup, low-configuration frameworks with a low level of commitment required, that can be easily taken out and replaced with more extensible or performant solutions.
 
-The project will be initialized using a practice project I've made as its base to touch up on the technologies picked, in order to quickly sort out the basics.
+The project will be initialized using a practice project I've made as its base to touch up on the technologies picked, in order to quickly sort out the basics. 
 
 Key technologies chosen:
 

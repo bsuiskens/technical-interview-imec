@@ -6,6 +6,12 @@ Installation:
 
 Python3 is required to run this application.
 
+You need to add a .env file with the following lines
+
+DATABASE_URL=sqlite:///./app.db
+DATABASE_TEST_URL=sqlite:///./test.db
+SEED_DATA_PATH=app/data/Company_A_database.xlsx
+
 The required packages can be installed with the command:
 
 pip install pandas openpyxl sqlalchemy fastapi uvicorn python-dotenv python-multipart pytest httpx
