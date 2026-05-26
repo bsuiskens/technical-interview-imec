@@ -10,19 +10,25 @@ from .database import Base, SessionLocal, engine, get_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Necessary to correctly split our test and prod db
+
     Base.metadata.create_all(bind=engine)
 
     db = SessionLocal()
-    bootstrap_company_a_data(db)
-    db.close()
+
+    try:
+        bootstrap_company_a_data(db)
+
+    finally:
+        db.close()
 
     yield
+
     
 app = FastAPI(
     title="Wafer Impact API",
     description="Proof-of-concept API for recursive climate impact calculation.",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan
 )
 
 # VALIDATION / DEBUG ENDPOINTS
