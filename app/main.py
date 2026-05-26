@@ -3,13 +3,21 @@ from sqlalchemy.orm import Session
 
 import tempfile
 from pathlib import Path
+from contextlib import asynccontextmanager
 from . import crud, models, schemas, bw_parser
 from .seed import bootstrap_company_a_data
-from .database import Base, engine, get_db
+from .database import Base, SessionLocal, engine, get_db
 
-Base.metadata.create_all(bind=engine)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Necessary to correctly split our test and prod db
+    Base.metadata.create_all(bind=engine)
 
-bootstrap_company_a_data()
+    db = SessionLocal()
+    bootstrap_company_a_data(db)
+    db.close()
+
+    yield
     
 app = FastAPI(
     title="Wafer Impact API",

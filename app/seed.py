@@ -15,14 +15,12 @@ DATA_PATH_ENV = os.getenv("SEED_DATA_PATH")
 BASE_DATA_PATH = Path(DATA_PATH_ENV)
 
 
-def bootstrap_company_a_data():
+def bootstrap_company_a_data(db: Session):
     """
     Seed Company A reference data if database is empty.
 
     This runs once at startup.
     """
-
-    db: Session = SessionLocal()
 
     try:
         existing_activity = db.query(Activity).first()

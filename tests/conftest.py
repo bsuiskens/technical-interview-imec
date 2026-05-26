@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 from app.database import Base, get_db
 from app.main import app
-
+from app.seed import bootstrap_company_a_data
 
 
 load_dotenv()
@@ -30,6 +30,7 @@ TestingSessionLocal = sessionmaker(
 )
 
 
+
 def override_get_db():
 
     db = TestingSessionLocal()
@@ -44,7 +45,12 @@ def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 
 
+Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
+
+db = TestingSessionLocal()
+bootstrap_company_a_data(db)
+db.close()
 
 
 @pytest.fixture
